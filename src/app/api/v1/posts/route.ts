@@ -1,35 +1,34 @@
-import { NextResponse } from 'next/server';
-
-// Mock data
-const POSTS = [
-    {
-        id: '1',
-        slug: 'welcome-to-the-commons',
-        title: 'Welcome to The Commons: A New Space for Living',
-        excerpt: 'Today we are launching The Commons, a dedicated space for exploring the future of housing, community living, and the philosophy behind Lodger.',
-        category: 'Announcement',
-        publishedAt: new Date().toISOString(),
-    },
-    {
-        id: '2',
-        slug: 'finding-your-perfect-match',
-        title: 'Finding Your Perfect Roommate Match',
-        excerpt: 'Tips and tricks for navigating the shared living landscape and finding people you actually want to live with.',
-        category: 'Guides',
-        publishedAt: new Date(Date.now() - 86400000).toISOString(),
-    }
-];
+import { db } from "@/lib/firebase";
+import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { NextResponse } from "next/server";
 
 export async function GET() {
-    // TODO: Fetch from Firestore
-    // const postsSnapshot = await getDocs(collection(db, 'posts'));
-    // const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    try {
+        const q = query(
+            collection(db, "posts"),
+            where("published", "==", true),
+            orderBy("publishedAt", "desc"),
+            limit(6)
+        );
 
-    return NextResponse.json({
-        data: POSTS,
-        meta: {
-            total: POSTS.length,
-            page: 1,
-        }
-    });
+        const snapshot = await getDocs(q);
+        const posts = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                slug: data.slug,
+                title: data.title,
+                excerpt: data.excerpt,
+                category: data.category,
+                publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : data.publishedAt,
+                coverImage: data.coverImage,
+                author: data.author
+            };
+        });
+
+        return NextResponse.json({ posts });
+    } catch (error) {
+        console.error("API Error fetching posts:", error);
+        return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
+    }
 }

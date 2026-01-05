@@ -1,44 +1,41 @@
 import Link from 'next/link';
+import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { BlogPost } from '@/types';
 
-// Mock data until API is ready
-const FEATURED_POST = {
-  slug: 'welcome-to-the-commons',
-  title: 'Welcome to The Commons: A New Space for Living',
-  excerpt: 'Today we are launching The Commons, a dedicated space for exploring the future of housing, community living, and the philosophy behind Lodger.',
-  author: 'Lodger Team',
-  date: 'December 29, 2025',
-  category: 'Announcement',
-  image: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop'
-};
+async function getPosts(): Promise<{ featured: BlogPost | null; recent: BlogPost[] }> {
+  try {
+    const q = query(
+      collection(db, 'posts'),
+      where('published', '==', true),
+      orderBy('publishedAt', 'desc'),
+      limit(4)
+    );
 
-const RECENT_POSTS = [
-  {
-    slug: 'finding-your-perfect-match',
-    title: 'Finding Your Perfect Roommate Match',
-    excerpt: 'Tips and tricks for navigating the shared living landscape and finding people you actually want to live with.',
-    author: 'Sarah Jenkins',
-    date: 'December 28, 2025',
-    category: 'Guides',
-  },
-  {
-    slug: 'understanding-leases',
-    title: 'Understanding Your Lease Agreement',
-    excerpt: 'Don\'t sign until you read this. We catch the small print so you don\'t have to.',
-    author: 'Legal Team',
-    date: 'December 25, 2025',
-    category: 'Education',
-  },
-  {
-    slug: 'interior-design-small-spaces',
-    title: 'Interior Design for Small Spaces',
-    excerpt: 'How to maximize your 10x10 room without sacrificing style or comfort.',
-    author: 'Design Studio',
-    date: 'December 22, 2025',
-    category: 'Design',
+    const snapshot = await getDocs(q);
+    const posts = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : data.publishedAt,
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt,
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+      } as BlogPost;
+    });
+
+    return {
+      featured: posts[0] || null,
+      recent: posts.slice(1)
+    };
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    return { featured: null, recent: [] };
   }
-];
+}
 
-export default function Home() {
+export default async function Home() {
+  const { featured, recent } = await getPosts();
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -63,36 +60,46 @@ export default function Home() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <Link href={`/post/${FEATURED_POST.slug}`} className="group grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl">
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
-              <img
-                src={FEATURED_POST.image}
-                alt={FEATURED_POST.title}
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
-            </div>
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                <span className="text-primary">{FEATURED_POST.category}</span>
-                <span>•</span>
-                <span>{FEATURED_POST.date}</span>
+          {featured ? (
+            <Link href={`/post/${featured.slug}`} className="group grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
+                <img
+                  src={featured.coverImage}
+                  alt={featured.title}
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
               </div>
-              <h1 className="font-serif text-5xl md:text-7xl font-bold leading-[0.95] group-hover:text-primary transition-colors duration-300">
-                {FEATURED_POST.title}
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed max-w-xl">
-                {FEATURED_POST.excerpt}
-              </p>
-              <div className="flex items-center gap-4 pt-4">
-                <div className="h-12 w-12 rounded-full bg-muted" />
-                <div>
-                  <div className="font-bold">{FEATURED_POST.author}</div>
-                  <div className="text-sm text-muted-foreground">Editor in Chief</div>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                  <span className="text-primary">{featured.category}</span>
+                  <span>•</span>
+                  <span>{new Date(featured.publishedAt).toLocaleDateString()}</span>
+                </div>
+                <h1 className="font-serif text-5xl md:text-7xl font-bold leading-[0.95] group-hover:text-primary transition-colors duration-300">
+                  {featured.title}
+                </h1>
+                <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed max-w-xl">
+                  {featured.excerpt}
+                </p>
+                <div className="flex items-center gap-4 pt-4">
+                  <img
+                    src={featured.author.avatar || '/placeholder-avatar.jpg'}
+                    alt={featured.author.name}
+                    className="h-12 w-12 rounded-full bg-muted object-cover"
+                  />
+                  <div>
+                    <div className="font-bold">{featured.author.name}</div>
+                    <div className="text-sm text-muted-foreground">{featured.author.role}</div>
+                  </div>
                 </div>
               </div>
+            </Link>
+          ) : (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground font-medium text-xl">No published posts yet. Check back soon!</p>
             </div>
-          </Link>
+          )}
         </div>
       </section>
 
@@ -105,26 +112,40 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-16">
-            {RECENT_POSTS.map((post) => (
-              <Link key={post.slug} href={`/post/${post.slug}`} className="group space-y-6 block">
-                <div className="aspect-[3/2] rounded-[1.5rem] bg-white border border-border/50 shadow-sm overflow-hidden group-hover:shadow-xl transition-all duration-300">
-                  <div className="w-full h-full bg-muted/20 flex items-center justify-center text-muted-foreground/30 font-headline text-6xl opacity-30 group-hover:scale-110 transition-transform duration-500">
-                    L
+            {recent.length > 0 ? (
+              recent.map((post) => (
+                <Link key={post.id} href={`/post/${post.slug}`} className="group space-y-6 block">
+                  <div className="aspect-[3/2] rounded-[1.5rem] bg-white border border-border/50 shadow-sm overflow-hidden group-hover:shadow-xl transition-all duration-300">
+                    {post.coverImage ? (
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted/20 flex items-center justify-center text-muted-foreground/30 font-headline text-6xl opacity-30 group-hover:scale-110 transition-transform duration-500">
+                        L
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="text-xs font-bold uppercase tracking-widest text-primary">
-                    {post.category}
+                  <div className="space-y-3">
+                    <div className="text-xs font-bold uppercase tracking-widest text-primary">
+                      {post.category}
+                    </div>
+                    <h3 className="font-serif text-3xl font-bold leading-tight group-hover:text-primary transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-muted-foreground line-clamp-3 leading-relaxed">
+                      {post.excerpt}
+                    </p>
                   </div>
-                  <h3 className="font-serif text-3xl font-bold leading-tight group-hover:text-primary transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-muted-foreground line-clamp-3 leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-10">
+                <p className="text-muted-foreground">No recent posts available.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
