@@ -10,6 +10,8 @@ export interface BlogPost {
         name: string;
         role: string;
         avatar: string;
+        avatarType?: 'photo' | 'avatar' | 'character';
+        avatarValue?: string;
     };
     category: string;
     tags: string[];
@@ -38,6 +40,8 @@ export interface Author {
     email: string;
     role: 'admin' | 'editor' | 'writer';
     avatar: string;
+    avatarType?: 'photo' | 'avatar' | 'character';
+    avatarValue?: string;
     bio: string;
 }
 
