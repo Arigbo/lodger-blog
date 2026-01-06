@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -40,7 +40,7 @@ export default function WriterSignupPage() {
     const [error, setError] = useState('');
     const router = useRouter();
 
-    const handleSignup = async (e: React.FormEvent) => {
+    const handleSignup = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');

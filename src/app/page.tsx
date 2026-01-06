@@ -6,6 +6,7 @@ import { SiteHeaderAuth } from '@/components/layout/site-header-auth';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, TrendingUp, Clock, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 // Helper to fetch from Firestore REST API
 async function fetchFirestore(collection: string, queryParams: string = "") {

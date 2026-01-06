@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { db } from '@/lib/firebase';
 import {
     collection,
@@ -52,7 +52,7 @@ export function Comments({ postId }: CommentsProps) {
         return () => unsubscribe();
     }, [postId]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!newComment.trim() || isSubmitting) return;
 
