@@ -2,9 +2,22 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
-import { collection, query, where, orderBy, onSnapshot, limit } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, limit, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useWriterAuth } from '@/hooks/useWriterAuth';
+import { markAsRead } from '@/lib/notifications';
+
+// Notification type definition
+interface Notification {
+    id: string;
+    recipientId: string;
+    message: string;
+    read: boolean;
+    createdAt: Timestamp;
+    senderName?: string;
+    senderAvatar?: string;
+}
+
 // import { formatDistanceToNow } from 'date-fns';
 function formatDistanceToNow(date: Date, options?: { addSuffix?: boolean }) {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
