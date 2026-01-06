@@ -1,32 +1,71 @@
 import Link from 'next/link';
-import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { BlogPost } from '@/types';
+import { SiteHeaderAuth } from '@/components/layout/site-header-auth';
+// Helper to fetch from Firestore REST API
+async function fetchFirestore(collection: string, queryParams: string = "") {
+  const projectId = "studio-2267792175-c3d0d";
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}${queryParams}`;
+
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) {
+    console.error(`Firestore REST API error: ${res.statusText}`);
+    return null;
+  }
+  return res.json();
+}
 
 async function getPosts(): Promise<{ featured: BlogPost | null; recent: BlogPost[] }> {
   try {
-    const q = query(
-      collection(db, 'posts'),
-      where('published', '==', true),
-      orderBy('publishedAt', 'desc'),
-      limit(4)
-    );
+    // Fetch all posts via REST (since we removed the SDK query) and filter in memory
+    // This matches the logic we put in the API route to avoid index complexity/gRPC issues
+    // For a real app with many posts, we'd use the REST API runQuery endpoint for valid filtering.
+    // But for this blog scale, fetching all is fine.
 
-    const snapshot = await getDocs(q);
-    const posts = snapshot.docs.map(doc => {
-      const data = doc.data();
+    const data = await fetchFirestore("posts", "?pageSize=100");
+    if (!data || !data.documents) return { featured: null, recent: [] };
+
+    let posts = data.documents.map((doc: any) => {
+      const fields = doc.fields;
+      const id = doc.name.split('/').pop();
+
+      const getString = (f: any) => f?.stringValue || "";
+      const getBoolean = (f: any) => f?.booleanValue || false;
+      const getMap = (f: any) => {
+        if (!f?.mapValue?.fields) return {};
+        const result: any = {};
+        for (const key in f.mapValue.fields) {
+          result[key] = f.mapValue.fields[key].stringValue;
+        }
+        return result;
+      };
+      const getTimestamp = (f: any) => f?.timestampValue || null;
+
       return {
-        id: doc.id,
-        ...data,
-        publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : data.publishedAt,
-        createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt,
-        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+        id,
+        slug: getString(fields.slug),
+        title: getString(fields.title),
+        excerpt: getString(fields.excerpt),
+        category: getString(fields.category),
+        published: getBoolean(fields.published),
+        publishedAt: getTimestamp(fields.publishedAt),
+        coverImage: getString(fields.coverImage),
+        author: getMap(fields.author),
+        createdAt: getTimestamp(fields.createdAt),
+        updatedAt: getTimestamp(fields.updatedAt)
       } as BlogPost;
+    });
+
+    // Filter published & Sort
+    posts = posts.filter((p: BlogPost) => p.published);
+    posts.sort((a: BlogPost, b: BlogPost) => {
+      const dateA = new Date(a.publishedAt || 0).getTime();
+      const dateB = new Date(b.publishedAt || 0).getTime();
+      return dateB - dateA;
     });
 
     return {
       featured: posts[0] || null,
-      recent: posts.slice(1)
+      recent: posts.slice(1) // Limit done by slicing
     };
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -51,9 +90,7 @@ export default async function Home() {
             <Link href="/category/culture" className="hover:text-primary transition-colors">Culture</Link>
             <Link href="/category/guides" className="hover:text-primary transition-colors">Guides</Link>
           </div>
-          <Link href="http://localhost:3000" target="_blank" className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full font-bold text-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
-            Open Lodger
-          </Link>
+          <SiteHeaderAuth />
         </div>
       </nav>
 

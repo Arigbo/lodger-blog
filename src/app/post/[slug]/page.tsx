@@ -1,6 +1,5 @@
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { BlogPost } from "@/types";
 import { ArrowLeft } from "lucide-react";
@@ -10,24 +9,55 @@ import { MarkdownRenderer } from "@/lib/markdown-renderer";
 // Force dynamic rendering to ensure fresh data
 export const dynamic = 'force-dynamic';
 
+// Helper to fetch from Firestore REST API
+async function fetchFirestore(collection: string) {
+    const projectId = "studio-2267792175-c3d0d";
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}`;
+
+    // Fetch all (optimized: ideally use structuredQuery but this is simpler for connection stability)
+    const res = await fetch(url + "?pageSize=100", { cache: 'no-store' });
+    if (!res.ok) return null;
+    return res.json();
+}
+
 async function getPost(slug: string): Promise<BlogPost | null> {
     try {
-        const q = query(collection(db, "posts"), where("slug", "==", slug));
-        const querySnapshot = await getDocs(q);
+        const data = await fetchFirestore("posts");
+        if (!data || !data.documents) return null;
 
-        if (querySnapshot.empty) return null;
+        // Find match by slug
+        const doc = data.documents.find((d: any) => d.fields.slug?.stringValue === slug);
+        if (!doc) return null;
 
-        // Serializing to plain object to avoid Next.js warnings about non-serializable data
-        const doc = querySnapshot.docs[0];
-        const data = doc.data();
+        const fields = doc.fields;
+        const id = doc.name.split('/').pop();
+
+        const getString = (f: any) => f?.stringValue || "";
+        const getBoolean = (f: any) => f?.booleanValue || false;
+        const getMap = (f: any) => {
+            if (!f?.mapValue?.fields) return {};
+            const result: any = {};
+            for (const key in f.mapValue.fields) {
+                result[key] = f.mapValue.fields[key].stringValue;
+            }
+            return result;
+        };
+        const getTimestamp = (f: any) => f?.timestampValue || null;
 
         return {
-            id: doc.id,
-            ...data,
-            // Convert timestamps if they are Timestamp objects
-            publishedAt: data.publishedAt?.toDate ? data.publishedAt.toDate().toISOString() : data.publishedAt,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt,
-            updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+            id,
+            slug: getString(fields.slug),
+            title: getString(fields.title),
+            excerpt: getString(fields.excerpt),
+            category: getString(fields.category),
+            published: getBoolean(fields.published),
+            publishedAt: getTimestamp(fields.publishedAt),
+            coverImage: getString(fields.coverImage),
+            author: getMap(fields.author),
+            content: getString(fields.content),
+            readTime: parseInt(fields.readTime?.integerValue || "1"),
+            createdAt: getTimestamp(fields.createdAt),
+            updatedAt: getTimestamp(fields.updatedAt),
         } as BlogPost;
     } catch (error) {
         console.error("Error fetching post:", error);
@@ -100,9 +130,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     </header>
 
                     {/* Featured Image */}
-                    <div className="aspect-[16/9] w-full rounded-[2rem] overflow-hidden shadow-2xl mb-16">
-                        <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
-                    </div>
+                    {post.coverImage && (post.coverImage.startsWith('http') || post.coverImage.startsWith('/')) ? (
+                        <div className="relative aspect-[16/9] w-full rounded-[2rem] overflow-hidden shadow-2xl mb-16">
+                            <Image
+                                src={post.coverImage}
+                                alt={post.title}
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                        </div>
+                    ) : (
+                        <div className="relative aspect-[16/9] w-full rounded-[2rem] overflow-hidden shadow-sm mb-16 bg-muted flex items-center justify-center border border-border">
+                            <span className="text-muted-foreground font-bold opacity-20 text-8xl uppercase">
+                                {post.category?.charAt(0) || 'L'}
+                            </span>
+                        </div>
+                    )}
 
                     {/* Content */}
                     <MarkdownRenderer content={post.content} />

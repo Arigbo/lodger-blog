@@ -8,6 +8,8 @@ import { BlogPost } from '@/types';
 import Link from 'next/link';
 import { Plus, Edit3, Trash2, Eye, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { NotificationBell } from '@/components/notifications/notification-bell';
+import { UserProfileDropdown } from '@/components/auth/user-profile-dropdown';
 
 export default function WriterDashboard() {
     const { user, loading: authLoading } = useWriterAuth();
@@ -51,7 +53,7 @@ export default function WriterDashboard() {
     };
 
     const createNewPost = () => {
-        router.push('/writer/editor/new');
+        router.push('/writer/create');
     }
 
     if (authLoading || loadingPosts) {
@@ -70,7 +72,8 @@ export default function WriterDashboard() {
                         THE COMMONS<span className="text-primary">.</span> <span className="text-muted-foreground ml-2 font-sans font-medium text-sm border-l pl-2">Writer Dashboard</span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        <span className="text-sm font-bold text-muted-foreground">{user?.email}</span>
+                        <NotificationBell />
+                        <UserProfileDropdown user={user} />
                     </div>
                 </div>
             </nav>

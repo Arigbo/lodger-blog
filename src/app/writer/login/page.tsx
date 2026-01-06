@@ -79,6 +79,15 @@ export default function WriterLoginPage() {
                         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Sign In <ArrowRight className="h-5 w-5" /></>}
                     </button>
                 </form>
+
+                <div className="space-y-4 text-center">
+                    <p className="text-sm text-muted-foreground">
+                        Please use your existing <strong>Lodger</strong> account credentials.
+                    </p>
+                    <div className="text-sm text-muted-foreground">
+                        Don't have an account? <Link href="/writer/signup" className="text-primary font-bold hover:underline">Sign Up</Link>
+                    </div>
+                </div>
             </div>
         </div>
     );
