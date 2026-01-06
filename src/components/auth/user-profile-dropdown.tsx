@@ -61,9 +61,17 @@ export function UserProfileDropdown({ user }: UserProfileDropdownProps) {
                         <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                     <div className="p-1">
+                        <Link
+                            href="/writer/dashboard"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors font-medium"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <UserIcon className="h-4 w-4" />
+                            Writer Dashboard
+                        </Link>
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 rounded-lg transition-colors font-medium"
                         >
                             <LogOut className="h-4 w-4" />
                             Log Out
