@@ -10,6 +10,7 @@ import { Plus, Edit3, Trash2, Eye, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { UserProfileDropdown } from '@/components/auth/user-profile-dropdown';
+import { cn } from '@/lib/utils';
 
 export default function WriterDashboard() {
     const { user, loading: authLoading } = useWriterAuth();

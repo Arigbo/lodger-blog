@@ -18,6 +18,17 @@ export interface BlogPost {
     createdAt: string; // ISO string
     updatedAt: string; // ISO string
     readTime: number; // minutes
+    views?: number;
+    authorBio?: string;
+}
+
+export interface Comment {
+    id: string;
+    postId: string;
+    authorName: string;
+    authorAvatar?: string;
+    content: string;
+    createdAt: string; // ISO string
 }
 
 export interface Author {
