@@ -23,7 +23,7 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
                 <div className="bg-primary text-white py-3 px-6 text-center text-[10px] font-black uppercase tracking-[0.2em] relative z-[60] flex items-center justify-center gap-4 animate-in slide-in-from-top duration-500">
                     <AlertCircle className="h-3 w-3" />
                     <span>Your Lodger profile is incomplete. Finish it to unlock all features.</span>
-                    <a href="https://lodger.co/profile" className="flex items-center gap-1.5 hover:underline decoration-2 underline-offset-4">
+                    <a href="https://lodger-ancients.vercel.app/profile" className="flex items-center gap-1.5 hover:underline decoration-2 underline-offset-4">
                         Complete Now <ExternalLink className="h-3 w-3" />
                     </a>
                 </div>

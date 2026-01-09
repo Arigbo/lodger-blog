@@ -66,6 +66,7 @@ export default function CreatePostPage() {
         try {
             const docRef = await addDoc(collection(db, 'posts'), {
                 ...form,
+                coverImage: form.coverImage || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=2070',
                 slug: form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
                 content: '', // Start with empty content
                 published: false,
@@ -82,9 +83,9 @@ export default function CreatePostPage() {
 
             // Redirect to editor
             router.push(`/writer/editor/${docRef.id}`);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error creating post:", error);
-            alert("Failed to create post. Please try again.");
+            alert(`Failed to create post: ${error.message || 'Permission denied'}. Please ensure you are a registered writer.`);
             setCreating(false);
         }
     };
@@ -256,14 +257,17 @@ export default function CreatePostPage() {
                         </div>
                     </div>
 
-                    <div className="pt-4">
+                    <div className="pt-4 text-center space-y-4">
                         <button
                             type="submit"
-                            disabled={creating || !form.coverImage}
-                            className="w-full bg-primary text-primary-foreground font-bold h-14 rounded-xl flex items-center justify-center gap-2 hover:translate-y-[-2px] hover:shadow-lg transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
+                            disabled={creating}
+                            className="w-full bg-black text-white font-black h-16 rounded-[2rem] flex items-center justify-center gap-3 hover:bg-primary hover:translate-y-[-2px] hover:shadow-2xl hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:translate-y-0 shadow-xl"
                         >
-                            {creating ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Create & Start Writing <ArrowRight className="h-5 w-5" /></>}
+                            {creating ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Enter the Manuscript <ArrowRight className="h-5 w-5" /></>}
                         </button>
+                        {!form.coverImage && (
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">A signature cover image will be auto-assigned if skipped.</p>
+                        )}
                     </div>
                 </form>
             </main>

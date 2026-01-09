@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/providers/auth-provider';
 import { UserProfileDropdown } from '@/components/auth/user-profile-dropdown';
 import { NotificationBell } from '@/components/notifications/notification-bell';
-import { LayoutDashboard, LogOut, Sparkles, Loader2 } from 'lucide-react';
+import { LayoutDashboard, LogOut, Sparkles, Loader2, PenTool } from 'lucide-react';
 
 export function SiteHeaderAuth() {
     const { user, loading, openAuthModal } = useAuth();
@@ -16,6 +16,14 @@ export function SiteHeaderAuth() {
     if (user) {
         return (
             <div className="flex items-center gap-6">
+                {user.isWriter && (
+                    <Link
+                        href="/writer/dashboard"
+                        className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-black transition-colors"
+                    >
+                        <PenTool className="h-3 w-3" /> Write
+                    </Link>
+                )}
                 <NotificationBell />
                 <UserProfileDropdown user={user} />
             </div>

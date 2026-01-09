@@ -6,7 +6,7 @@ import { deleteDoc, doc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import { BlogPost } from '@/types';
 import Link from 'next/link';
-import { Plus, Edit3, Trash2, Eye, Loader2, BookOpen, CheckCircle, FileText, BarChart3, ThumbsUp, ThumbsDown, MessageSquare, AlertTriangle, User, ExternalLink } from 'lucide-react';
+import { Plus, Edit3, Trash2, Eye, Loader2, BookOpen, CheckCircle, FileText, BarChart3, ThumbsUp, ThumbsDown, MessageSquare, AlertTriangle, User, ExternalLink, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { UserProfileDropdown } from '@/components/auth/user-profile-dropdown';
@@ -50,10 +50,6 @@ export default function WriterDashboard() {
         }
     };
 
-    const createNewPost = () => {
-        router.push('/writer/editor/new');
-    };
-
     const stats = useMemo(() => {
         const publishedCount = posts.filter(p => p.published).length;
         const totalViews = posts.reduce((acc, p) => acc + (p.views || 0), 0);
@@ -73,6 +69,10 @@ export default function WriterDashboard() {
         };
     }, [posts]);
 
+    const createNewPost = () => {
+        router.push('/writer/create');
+    };
+
     if (authLoading || loadingPosts) {
         return (
             <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
@@ -82,6 +82,54 @@ export default function WriterDashboard() {
                 </div>
             </div>
         )
+    }
+
+    // New: Writer Onboarding Check
+    if (user && !user.isWriter) {
+        return (
+            <div className="min-h-screen bg-[#fafafa]">
+                <nav className="bg-white/80 backdrop-blur-md border-b border-border/40 sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                        <Link href="/" className="font-headline font-black text-xl tracking-tighter flex items-center gap-2">
+                            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                                <BookOpen className="h-4 w-4 text-white" />
+                            </div>
+                            <span>THE COMMONS. <span className="text-muted-foreground/40 ml-2 font-sans font-medium text-xs border-l border-border/50 pl-2 uppercase tracking-widest text-[8px]">Writer Application</span></span>
+                        </Link>
+                        <UserProfileDropdown user={user} />
+                    </div>
+                </nav>
+
+                <main className="max-w-2xl mx-auto px-6 py-24 text-center">
+                    <div className="w-24 h-24 bg-primary/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 ring-1 ring-primary/10">
+                        <Plus className="h-10 w-10 text-primary" />
+                    </div>
+                    <h1 className="font-headline font-black text-4xl lg:text-5xl uppercase tracking-tighter mb-6">Start Sharing Your Narrative</h1>
+                    <p className="text-muted-foreground font-medium text-lg leading-relaxed mb-12 italic">
+                        The Commons is an curated space for student perspectives. Apply to join our circle of writers and start contributing to the community dialogue.
+                    </p>
+
+                    <button
+                        onClick={async () => {
+                            try {
+                                const { doc, updateDoc } = await import('firebase/firestore');
+                                const { db } = await import('@/lib/firebase');
+                                await updateDoc(doc(db, 'users', user.uid), {
+                                    isWriter: true,
+                                    isWriterCandidate: false
+                                });
+                                window.location.reload();
+                            } catch (e) {
+                                alert("Failed to join. Please try again.");
+                            }
+                        }}
+                        className="bg-black text-white font-black px-12 py-5 rounded-[2rem] shadow-2xl hover:bg-primary transition-all active:scale-95 flex items-center gap-3 mx-auto"
+                    >
+                        Join the Writing Circle <ArrowRight className="h-5 w-5" />
+                    </button>
+                </main>
+            </div>
+        );
     }
 
     return (

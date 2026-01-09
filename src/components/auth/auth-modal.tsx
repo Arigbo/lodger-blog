@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Sparkles, Check, ArrowRight, ChevronLeft, Loader2, Compass, PenTool } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
@@ -24,6 +25,7 @@ const CATEGORIES = [
 ];
 
 export function AuthModal({ isOpen, onClose, initialStep = 'login' }: AuthModalProps) {
+    const router = useRouter();
     const [step, setStep] = useState(1); // 1: Identity, 2: Interests, 3: Success/Writer
     const [mode, setMode] = useState<'login' | 'signup'>(initialStep === 'signup' ? 'signup' : 'login');
     const [loading, setLoading] = useState(false);
@@ -287,13 +289,19 @@ export function AuthModal({ isOpen, onClose, initialStep = 'login' }: AuthModalP
                                     >
                                         <Compass className="h-5 w-5" /> Explore Stories
                                     </button>
-                                    <Link
-                                        href="/writer/dashboard"
-                                        onClick={onClose}
+                                    <button
+                                        onClick={async () => {
+                                            const user = auth.currentUser;
+                                            if (user) {
+                                                await setDoc(doc(db, 'users', user.uid), { isWriter: true }, { merge: true });
+                                                onClose();
+                                                setTimeout(() => router.push('/writer/dashboard'), 100);
+                                            }
+                                        }}
                                         className="w-full bg-[#f8f8f8] text-black border border-black/5 font-black h-16 rounded-2xl flex items-center justify-center gap-3 hover:bg-black hover:text-white transition-all group"
                                     >
-                                        <PenTool className="h-5 w-5" /> Apply as Writer
-                                    </Link>
+                                        <PenTool className="h-5 w-5" /> Join as Writer
+                                    </button>
                                 </div>
                             </motion.div>
                         )}
