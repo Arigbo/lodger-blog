@@ -112,7 +112,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
                     {/* Content Section */}
                     <div className="relative">
                         {/* Sidebar Share (Desktop only) */}
-                        <aside className="hidden xl:block absolute -left-56 top-0 h-full">
+                        <aside className="hidden xl:block absolute -left-48 top-0 h-full z-30">
                             <div className="sticky top-40 flex flex-col gap-8 items-center">
                                 <Link
                                     href="/"

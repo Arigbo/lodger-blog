@@ -42,8 +42,6 @@ export default function CreatePostPage() {
 
         setUploadingImage(true);
         try {
-            // Upload to a temp path or structured path. 
-            // Since we don't have a post ID yet, we'll use a temp folder or just a timestamped file in uploads.
             const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
             const storageRef = ref(storage, `uploads/${user.uid}/${filename}`);
 
@@ -51,11 +49,12 @@ export default function CreatePostPage() {
             const downloadURL = await getDownloadURL(storageRef);
 
             setForm({ ...form, coverImage: downloadURL });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error uploading image:', error);
-            alert('Failed to upload image');
+            alert(`Failed to upload image: ${error.message || 'Unknown error'}`);
         } finally {
             setUploadingImage(false);
+            if (e.target) e.target.value = ''; // Reset input to allow re-uploading the same file
         }
     };
 

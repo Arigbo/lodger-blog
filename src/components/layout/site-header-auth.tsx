@@ -17,13 +17,6 @@ export function SiteHeaderAuth() {
     if (user) {
         return (
             <div className="flex items-center gap-6">
-                <Link
-                    href="/writer/dashboard"
-                    className="hidden lg:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-all bg-[#f8f8f8] px-5 py-3 rounded-full border border-black/5"
-                >
-                    <LayoutDashboard className="h-3 w-3" />
-                    Dashboard
-                </Link>
                 <NotificationBell />
                 <UserProfileDropdown user={user} />
             </div>

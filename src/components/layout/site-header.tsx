@@ -12,7 +12,7 @@ export function SiteHeader() {
                     <div className="w-8 h-8 bg-black rounded-lg group-hover:bg-primary transition-colors duration-500 flex items-center justify-center">
                         <Sparkles className="h-4 w-4 text-white" />
                     </div>
-                    <span>LODGER BLOG<span className="text-primary group-hover:animate-pulse">.</span></span>
+                    <span>THE COMMONS<span className="text-primary group-hover:animate-pulse">.</span></span>
                 </Link>
                 <div className="hidden lg:flex items-center gap-10 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                     <Link href="/" className="hover:text-primary transition-all relative group">

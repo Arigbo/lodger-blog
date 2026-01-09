@@ -32,7 +32,7 @@ export function SiteFooter() {
                 <div className="w-full pt-20 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
                     <div className="text-left">
                         <Link href="/" className="font-headline font-black text-2xl tracking-tighter">
-                            LODGER BLOG<span className="text-primary truncate">.</span>
+                            THE COMMONS<span className="text-primary truncate">.</span>
                         </Link>
                     </div>
                     <div className="flex justify-center gap-10 text-[10px] font-black uppercase tracking-[0.2em] text-white/40">

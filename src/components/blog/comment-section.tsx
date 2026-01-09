@@ -7,9 +7,11 @@ import { MessageSquare, Send, Loader2, User, Clock, ShieldAlert } from 'lucide-r
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { WriterUser } from '@/hooks/useWriterAuth';
+
 interface CommentSectionProps {
     postId: string;
-    user?: any; // The current user (writer or reader)
+    user?: WriterUser | null; // The current user (writer or reader)
 }
 
 export function CommentSection({ postId, user }: CommentSectionProps) {

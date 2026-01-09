@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, signOut } from 'firebase/auth';
+import { WriterUser } from '@/hooks/useWriterAuth';
+import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 
 interface UserProfileDropdownProps {
-    user: User | null;
+    user: WriterUser | null;
 }
 
 export function UserProfileDropdown({ user }: UserProfileDropdownProps) {

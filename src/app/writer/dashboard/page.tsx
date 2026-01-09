@@ -93,7 +93,7 @@ export default function WriterDashboard() {
                         <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
                             <BookOpen className="h-4 w-4 text-white" />
                         </div>
-                        <span>LODGER BLOG<span className="text-primary">.</span> <span className="text-muted-foreground/40 ml-2 font-sans font-medium text-xs border-l border-border/50 pl-2 uppercase tracking-widest">Writer Hub</span></span>
+                        <span>THE COMMONS<span className="text-primary">.</span> <span className="text-muted-foreground/40 ml-2 font-sans font-medium text-xs border-l border-border/50 pl-2 uppercase tracking-widest">Writer Hub</span></span>
                     </Link>
                     <div className="flex items-center gap-4">
                         <NotificationBell />
