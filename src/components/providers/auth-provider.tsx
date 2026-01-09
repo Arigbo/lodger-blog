@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth'; // Renamed import
 import { auth, db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { AuthModal } from '@/components/auth/auth-modal';
@@ -11,6 +11,7 @@ interface AuthContextType {
     loading: boolean;
     openAuthModal: (step?: 'login' | 'signup') => void;
     closeAuthModal: () => void;
+    logout: () => Promise<void>; // Added logout
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,8 +67,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setModalState(prev => ({ ...prev, isOpen: false }));
     };
 
+    const logout = async () => {
+        try {
+            await firebaseSignOut(auth);
+            setUser(null);
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, openAuthModal, closeAuthModal }}>
+        <AuthContext.Provider value={{ user, loading, openAuthModal, closeAuthModal, logout }}>
             {children}
             <AuthModal
                 isOpen={modalState.isOpen}
