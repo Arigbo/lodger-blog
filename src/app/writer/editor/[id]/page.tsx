@@ -1,19 +1,19 @@
 'use client';
 
-import { useWriterAuth } from '@/hooks/useWriterAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, getDocs, limit } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Loader2, ArrowLeft, Save, Globe, Settings, X, BookOpen, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
 import { TiptapEditor } from '@/components/editor/tiptap-editor';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { UserProfileDropdown } from '@/components/auth/user-profile-dropdown';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function EditorPage() {
-    const { user, loading: authLoading } = useWriterAuth();
+    const { user, loading: authLoading } = useAuth();
     const params = useParams();
     const idRaw = params?.id;
     const id = Array.isArray(idRaw) ? idRaw[0] : idRaw;

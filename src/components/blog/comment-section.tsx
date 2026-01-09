@@ -7,14 +7,15 @@ import { MessageSquare, Send, Loader2, User, Clock, ShieldAlert } from 'lucide-r
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { WriterUser } from '@/hooks/useWriterAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 
 interface CommentSectionProps {
     postId: string;
-    user?: WriterUser | null; // The current user (writer or reader)
+    user?: any; // We can use the user from context instead or keep it as prop
 }
 
-export function CommentSection({ postId, user }: CommentSectionProps) {
+export function CommentSection({ postId }: CommentSectionProps) {
+    const { user, openAuthModal } = useAuth();
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
@@ -41,7 +42,7 @@ export function CommentSection({ postId, user }: CommentSectionProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) {
-            alert("Please sign in to join the conversation.");
+            openAuthModal('signup');
             return;
         }
         if (!newComment.trim() || submitting) return;

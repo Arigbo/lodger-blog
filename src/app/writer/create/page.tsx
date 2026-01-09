@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useWriterAuth } from '@/hooks/useWriterAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -10,7 +10,7 @@ import { Loader2, ArrowLeft, ArrowRight, UploadCloud, Link as LinkIcon, User, Im
 import Link from 'next/link';
 
 export default function CreatePostPage() {
-    const { user, loading: authLoading } = useWriterAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
 
     const [form, setForm] = useState({

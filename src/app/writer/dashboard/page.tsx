@@ -1,6 +1,6 @@
 'use client';
 
-import { useWriterAuth } from '@/hooks/useWriterAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 import { db } from '@/lib/firebase';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { blogService } from '@/lib/blog-service';
 
 export default function WriterDashboard() {
-    const { user, loading: authLoading } = useWriterAuth();
+    const { user, loading: authLoading } = useAuth();
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [activeTab, setActiveTab] = useState<'stories' | 'analytics'>('stories');

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import { collection, query, where, orderBy, onSnapshot, limit, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useWriterAuth } from '@/hooks/useWriterAuth';
+import { useAuth } from '@/components/providers/auth-provider';
 import { markAsRead } from '@/lib/notifications';
 
 // Notification type definition
@@ -35,7 +35,7 @@ function formatDistanceToNow(date: Date, options?: { addSuffix?: boolean }) {
 }
 
 export function NotificationBell() {
-    const { user } = useWriterAuth();
+    const { user } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
