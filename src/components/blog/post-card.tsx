@@ -1,19 +1,107 @@
-'use client';
-
 import Link from 'next/link';
 import { BlogPost } from '@/types';
 import { cn } from '@/lib/utils';
-import { Clock, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight, MessageSquare, Heart, BarChart2, Share2, MoreHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatDistanceToNow } from 'date-fns';
 
 interface PostCardProps {
     post: BlogPost;
     index?: number;
     layout?: 'full' | 'standard';
+    variant?: 'card' | 'feed';
 }
 
-export function PostCard({ post, index = 0, layout = 'standard' }: PostCardProps) {
+export function PostCard({ post, index = 0, layout = 'standard', variant = 'card' }: PostCardProps) {
     const isFull = layout === 'full';
+
+    if (variant === 'feed') {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                viewport={{ once: true }}
+                className="border-b border-border/40 hover:bg-black/[0.02] transition-colors cursor-pointer block"
+            >
+                <Link href={`/post/${post.slug}`} className="block px-4 py-3">
+                    <div className="flex gap-3">
+                        {/* Avatar */}
+                        <div className="shrink-0">
+                            <div className="h-10 w-10 rounded-full bg-muted overflow-hidden">
+                                <img
+                                    src={post.author?.avatar || '/placeholder-avatar.jpg'}
+                                    alt={post.author?.name}
+                                    className="h-full w-full object-cover"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                            {/* Header */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 min-w-0 text-[15px]">
+                                    <span className="font-bold truncate text-foreground">{post.author?.name}</span>
+                                    {/* <span className="text-muted-foreground truncate hidden sm:block">@{post.author?.name.toLowerCase().replace(/\s/g, '')}</span> */}
+                                    <span className="text-muted-foreground shrink-0">·</span>
+                                    <span className="text-muted-foreground shrink-0 hover:underline">
+                                        {post.publishedAt ? formatDistanceToNow(new Date(post.publishedAt), { addSuffix: false }).replace('about ', '') : 'Draft'}
+                                    </span>
+                                </div>
+                                <button className="p-1.5 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors -mr-2">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            {/* Text */}
+                            <div className="mt-0.5 text-[15px] leading-normal text-foreground whitespace-pre-wrap break-words">
+                                {post.excerpt || post.title}
+                            </div>
+
+                            {/* Image (if exists) */}
+                            {post.coverImage && (
+                                <div className="mt-3 rounded-2xl overflow-hidden border border-border/40 max-h-[500px]">
+                                    <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+                                </div>
+                            )}
+
+                            {/* Actions Bar */}
+                            <div className="flex items-center justify-between mt-3 max-w-[425px] text-muted-foreground">
+                                <div className="flex items-center gap-1 group">
+                                    <div className="p-2 rounded-full group-hover:bg-blue-500/10 group-hover:text-blue-500 transition-colors">
+                                        <MessageSquare className="h-4.5 w-4.5" />
+                                    </div>
+                                    <span className="text-xs group-hover:text-blue-500 transition-colors">{post.commentCount || 0}</span>
+                                </div>
+
+                                <div className="flex items-center gap-1 group">
+                                    <div className="p-2 rounded-full group-hover:bg-green-500/10 group-hover:text-green-500 transition-colors">
+                                        <Share2 className="h-4.5 w-4.5" />
+                                    </div>
+                                    {/* <span className="text-xs group-hover:text-green-500 transition-colors">0</span> */}
+                                </div>
+
+                                <div className="flex items-center gap-1 group">
+                                    <div className="p-2 rounded-full group-hover:bg-pink-500/10 group-hover:text-pink-500 transition-colors">
+                                        <Heart className="h-4.5 w-4.5" />
+                                    </div>
+                                    <span className="text-xs group-hover:text-pink-500 transition-colors">{post.likes?.length || 0}</span>
+                                </div>
+
+                                <div className="flex items-center gap-1 group">
+                                    <div className="p-2 rounded-full group-hover:bg-blue-500/10 group-hover:text-blue-500 transition-colors">
+                                        <BarChart2 className="h-4.5 w-4.5" />
+                                    </div>
+                                    <span className="text-xs group-hover:text-blue-500 transition-colors">{post.views || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Link>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div

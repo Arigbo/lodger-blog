@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from "@/components/providers/auth-provider";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -10,12 +10,18 @@ import { AlertCircle, ExternalLink } from "lucide-react";
 export function LayoutContent({ children }: { children: React.ReactNode }) {
     const { openAuthModal, user } = useAuth();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const isAppRoute = pathname?.startsWith('/writer') || pathname?.startsWith('/home') || pathname?.startsWith('/post');
 
     useEffect(() => {
         const authAction = searchParams.get('auth');
         if (authAction === 'login') openAuthModal('login');
         if (authAction === 'signup') openAuthModal('signup');
     }, [searchParams, openAuthModal]);
+
+    if (isAppRoute) {
+        return <>{children}</>;
+    }
 
     return (
         <div className="flex flex-col min-h-screen">
