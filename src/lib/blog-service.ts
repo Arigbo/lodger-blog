@@ -165,11 +165,11 @@ export const blogService = {
         try {
             const q = query(
                 collection(db, 'posts'),
-                where('authorId', '==', authorId),
-                orderBy('createdAt', 'desc')
+                where('authorId', '==', authorId)
             );
             const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => this.mapDocToBlogPost(doc));
+            const posts = snapshot.docs.map(doc => this.mapDocToBlogPost(doc));
+            return posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         } catch (error) {
             console.error(`Error fetching posts for writer ${authorId}:`, error);
             return [];
