@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 
 export function LeftSidebar() {
     const pathname = usePathname();
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
 
     const navItems = [
         { icon: Home, label: 'Home', href: '/home' },
