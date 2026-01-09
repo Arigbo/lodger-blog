@@ -1,85 +1,31 @@
 'use client';
 
-import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { BlogPost } from "@/types";
-import { ArrowLeft, Clock, Calendar, Tag, Share2, Sparkles, LayoutDashboard, ChevronLeft } from "lucide-react";
+import { ChevronLeft, Clock, Calendar, Sparkles, ArrowLeft } from "lucide-react";
 import { MarkdownRenderer } from "@/lib/markdown-renderer";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { SocialShare } from "@/components/blog/social-share";
 import { Comments } from "@/components/blog/comments";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-import { SiteHeaderAuth } from "@/components/layout/site-header-auth";
+import { motion } from "framer-motion";
+import { useState, useEffect, use } from "react";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { blogService } from "@/lib/blog-service";
+import Image from "next/image";
+import Link from "next/link";
 
-// Helper to fetch from Firestore REST API
-async function fetchFirestore(collection: string) {
-    const projectId = "studio-2267792175-c3d0d";
-    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}`;
-
-    const res = await fetch(url + "?pageSize=100", { cache: 'no-store' });
-    if (!res.ok) return null;
-    return res.json();
-}
-
-async function getPostData(slug: string): Promise<BlogPost | null> {
-    try {
-        const data = await fetchFirestore("posts");
-        if (!data || !data.documents) return null;
-
-        const doc = data.documents.find((d: any) => d.fields.slug?.stringValue === slug);
-        if (!doc) return null;
-
-        const fields = doc.fields;
-        const id = doc.name.split('/').pop();
-
-        const getString = (f: any) => f?.stringValue || "";
-        const getBoolean = (f: any) => f?.booleanValue || false;
-        const getMap = (f: any) => {
-            if (!f?.mapValue?.fields) return {};
-            const result: any = {};
-            for (const key in f.mapValue.fields) {
-                result[key] = f.mapValue.fields[key].stringValue;
-            }
-            return result;
-        };
-        const getTimestamp = (f: any) => f?.timestampValue || null;
-
-        return {
-            id,
-            slug: getString(fields.slug),
-            title: getString(fields.title),
-            excerpt: getString(fields.excerpt),
-            category: getString(fields.category),
-            published: getBoolean(fields.published),
-            publishedAt: getTimestamp(fields.publishedAt),
-            coverImage: getString(fields.coverImage),
-            author: getMap(fields.author),
-            content: getString(fields.content),
-            readTime: parseInt(fields.readTime?.integerValue || "1"),
-            createdAt: getTimestamp(fields.createdAt),
-            updatedAt: getTimestamp(fields.updatedAt),
-            authorBio: getString(fields.authorBio),
-        } as BlogPost;
-    } catch (error) {
-        console.error("Error fetching post:", error);
-        return null;
-    }
-}
-
-export default function BlogPostPage({ params }: { params: any }) {
+export default function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = use(params);
     const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        params.then((p: any) => {
-            getPostData(p.slug).then(res => {
-                setPost(res);
-                setLoading(false);
-            });
+        blogService.getPostBySlug(slug).then(res => {
+            setPost(res);
+            setLoading(false);
         });
-    }, [params]);
+    }, [slug]);
 
     if (loading) {
         return (
@@ -96,27 +42,7 @@ export default function BlogPostPage({ params }: { params: any }) {
     return (
         <div className="min-h-screen bg-[#fafafa]">
             <ReadingProgress />
-
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5 h-20">
-                <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-                    <Link href="/" className="font-headline font-black text-xs tracking-[0.2em] hover:text-primary transition-all flex items-center gap-3 group">
-                        <div className="p-2.5 rounded-xl bg-black text-white group-hover:bg-primary transition-colors">
-                            <ChevronLeft className="h-4 w-4" />
-                        </div>
-                        <span className="hidden sm:inline">BACK DISPATCH</span>
-                    </Link>
-                    <Link href="/" className="font-headline font-black text-2xl tracking-tighter group hidden md:flex items-center gap-2">
-                        <div className="w-8 h-8 bg-black rounded-lg group-hover:bg-primary transition-colors flex items-center justify-center">
-                            <Sparkles className="h-4 w-4 text-white" />
-                        </div>
-                        <span>THE COMMONS<span className="text-primary group-hover:animate-pulse">.</span></span>
-                    </Link>
-                    <div className="flex items-center gap-6">
-                        <SocialShare title={post.title} />
-                        <SiteHeaderAuth />
-                    </div>
-                </div>
-            </nav>
+            <SiteHeader />
 
             <main className="pt-40 pb-32 px-6">
                 <motion.article
@@ -153,10 +79,10 @@ export default function BlogPostPage({ params }: { params: any }) {
                         </p>
 
                         <div className="flex items-center justify-center gap-5 pt-12 border-t border-black/5">
-                            <img src={post.author.avatar || "/placeholder-avatar.jpg"} alt={post.author.name} className="h-20 w-20 rounded-[2rem] object-cover bg-muted ring-8 ring-white shadow-2xl" />
+                            <img src={post.author?.avatar || "/placeholder-avatar.jpg"} alt={post.author?.name} className="h-20 w-20 rounded-[2rem] object-cover bg-muted ring-8 ring-white shadow-2xl" />
                             <div className="text-left">
-                                <div className="font-headline font-black text-2xl uppercase tracking-tighter">{post.author.name}</div>
-                                <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{post.author.role}</div>
+                                <div className="font-headline font-black text-2xl uppercase tracking-tighter">{post.author?.name}</div>
+                                <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{post.author?.role}</div>
                             </div>
                         </div>
                     </header>
@@ -179,7 +105,7 @@ export default function BlogPostPage({ params }: { params: any }) {
                         </div>
                     )}
 
-                    {/* Content Section Section */}
+                    {/* Content Section */}
                     <div className="relative">
                         {/* Sidebar Share (Desktop only) */}
                         <aside className="hidden xl:block absolute -left-32 top-0 h-full">
@@ -187,7 +113,7 @@ export default function BlogPostPage({ params }: { params: any }) {
                                 <Link
                                     href="/"
                                     className="w-12 h-12 rounded-2xl bg-white border border-black/5 hover:border-black hover:bg-black hover:text-white transition-all shadow-xl flex items-center justify-center group"
-                                    title="Go Back"
+                                    title="Back to Posts"
                                 >
                                     <ArrowLeft className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" />
                                 </Link>
@@ -200,7 +126,7 @@ export default function BlogPostPage({ params }: { params: any }) {
 
                         <div className="bg-white p-10 md:p-20 rounded-[4rem] border border-black/5 shadow-2xl relative z-10 overflow-hidden">
                             <div className="absolute top-0 right-0 p-60 bg-primary/5 blur-[120px] rounded-full -mr-40 -mt-40" />
-                            <div className="relative z-10">
+                            <div className="relative z-10 typography-premium">
                                 <MarkdownRenderer content={post.content} />
                             </div>
                         </div>
@@ -210,16 +136,16 @@ export default function BlogPostPage({ params }: { params: any }) {
                     <footer className="mt-24 p-12 md:p-16 rounded-[4rem] bg-black text-white relative overflow-hidden group shadow-2xl">
                         <div className="absolute top-0 right-0 p-60 bg-primary/20 blur-[150px] rounded-full -mr-40 -mt-40 transition-all duration-1000 group-hover:opacity-70" />
                         <div className="relative z-10 flex flex-col md:flex-row items-center gap-12 text-center md:text-left">
-                            <img src={post.author.avatar || "/placeholder-avatar.jpg"} alt={post.author.name} className="h-40 w-40 rounded-[2.5rem] object-cover ring-8 ring-white/10 shrink-0" />
+                            <img src={post.author?.avatar || "/placeholder-avatar.jpg"} alt={post.author?.name} className="h-40 w-40 rounded-[2.5rem] object-cover ring-8 ring-white/10 shrink-0" />
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <h4 className="font-headline font-black text-4xl uppercase tracking-tighter">DISPATCH FROM {post.author.name}</h4>
+                                    <h4 className="font-headline font-black text-4xl uppercase tracking-tighter">ABOUT {post.author?.name}</h4>
                                     <div className="flex items-center justify-center md:justify-start gap-3">
-                                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-4 py-2 rounded-full">THE COMMONS {post.author.role}</span>
+                                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-4 py-2 rounded-full">{post.author?.role}</span>
                                     </div>
                                 </div>
                                 <p className="text-white/50 leading-relaxed font-medium text-xl italic max-w-2xl">
-                                    "{post.authorBio || `A voice for the modern community. Sharing perspectives on ${post.category.toLowerCase()}, technology, and the future of living.`}"
+                                    "{post.authorBio || `Sharing perspectives on ${post.category.toLowerCase()}, technology, and the future of living.`}"
                                 </p>
                             </div>
                         </div>
@@ -232,6 +158,8 @@ export default function BlogPostPage({ params }: { params: any }) {
 
                 </motion.article>
             </main>
+
+            <SiteFooter />
         </div>
     );
 }
