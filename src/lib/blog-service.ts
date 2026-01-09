@@ -9,9 +9,16 @@ import {
     doc,
     limit,
     DocumentData,
-    QueryDocumentSnapshot
+    QueryDocumentSnapshot,
+    updateDoc,
+    arrayUnion,
+    arrayRemove,
+    increment,
+    addDoc,
+    serverTimestamp,
+    Timestamp
 } from 'firebase/firestore';
-import { BlogPost } from '@/types';
+import { BlogPost, Comment } from '@/types';
 
 export const blogService = {
     /**
@@ -59,10 +66,95 @@ export const blogService = {
             const docRef = doc(db, 'posts', id);
             const docSnap = await getDoc(docRef);
             if (!docSnap.exists()) return null;
-            return { id: docSnap.id, ...docSnap.data() } as BlogPost;
+            return this.mapDocToBlogPost(docSnap as any); // Using helper for consistency
         } catch (error) {
             console.error(`Error fetching post by ID ${id}:`, error);
             return null;
+        }
+    },
+
+    /**
+     * Social Interactions
+     */
+    async toggleLike(postId: string, userId: string, hasLiked: boolean) {
+        const postRef = doc(db, 'posts', postId);
+        try {
+            await updateDoc(postRef, {
+                likes: hasLiked ? arrayRemove(userId) : arrayUnion(userId),
+                // If liking, make sure it's not in dislikes
+                ...(!hasLiked && { dislikes: arrayRemove(userId) })
+            });
+        } catch (error) {
+            console.error('Error toggling like:', error);
+            throw error;
+        }
+    },
+
+    async toggleDislike(postId: string, userId: string, hasDisliked: boolean) {
+        const postRef = doc(db, 'posts', postId);
+        try {
+            await updateDoc(postRef, {
+                dislikes: hasDisliked ? arrayRemove(userId) : arrayUnion(userId),
+                // If disliking, make sure it's not in likes
+                ...(!hasDisliked && { likes: arrayRemove(userId) })
+            });
+        } catch (error) {
+            console.error('Error toggling dislike:', error);
+            throw error;
+        }
+    },
+
+    async reportPost(postId: string, userId: string) {
+        const postRef = doc(db, 'posts', postId);
+        try {
+            await updateDoc(postRef, {
+                reports: arrayUnion(userId)
+            });
+        } catch (error) {
+            console.error('Error reporting post:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Commenting
+     */
+    async addComment(postId: string, commentData: Omit<Comment, 'id' | 'createdAt' | 'postId'>) {
+        try {
+            const commentsRef = collection(db, 'posts', postId, 'comments');
+            const postRef = doc(db, 'posts', postId);
+
+            await addDoc(commentsRef, {
+                ...commentData,
+                postId,
+                createdAt: serverTimestamp()
+            });
+
+            await updateDoc(postRef, {
+                commentCount: increment(1)
+            });
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            throw error;
+        }
+    },
+
+    async getComments(postId: string): Promise<Comment[]> {
+        try {
+            const commentsRef = collection(db, 'posts', postId, 'comments');
+            const q = query(commentsRef, orderBy('createdAt', 'desc'));
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString()
+                } as Comment;
+            });
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+            return [];
         }
     },
 
@@ -77,7 +169,7 @@ export const blogService = {
                 orderBy('createdAt', 'desc')
             );
             const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+            return snapshot.docs.map(doc => this.mapDocToBlogPost(doc));
         } catch (error) {
             console.error(`Error fetching posts for writer ${authorId}:`, error);
             return [];
@@ -87,8 +179,8 @@ export const blogService = {
     /**
      * Helper to map Firestore document to BlogPost type
      */
-    mapDocToBlogPost(doc: QueryDocumentSnapshot<DocumentData>): BlogPost {
-        const data = doc.data();
+    mapDocToBlogPost(doc: QueryDocumentSnapshot<DocumentData> | { id: string, data: () => DocumentData }): BlogPost {
+        const data = typeof doc.data === 'function' ? doc.data() : (doc as any).data;
         return {
             id: doc.id,
             slug: data.slug || '',
@@ -107,6 +199,10 @@ export const blogService = {
             readTime: data.readTime || 1,
             views: data.views || 0,
             authorBio: data.authorBio || '',
+            likes: data.likes || [],
+            dislikes: data.dislikes || [],
+            reports: data.reports || [],
+            commentCount: data.commentCount || 0
         } as BlogPost;
     }
 };

@@ -2,21 +2,23 @@
 
 import { notFound } from "next/navigation";
 import { BlogPost } from "@/types";
-import { ChevronLeft, Clock, Calendar, Sparkles, ArrowLeft } from "lucide-react";
+import { Clock, Calendar, Sparkles, ArrowLeft } from "lucide-react";
 import { MarkdownRenderer } from "@/lib/markdown-renderer";
 import { ReadingProgress } from "@/components/blog/reading-progress";
-import { SocialShare } from "@/components/blog/social-share";
-import { Comments } from "@/components/blog/comments";
+import { SocialInteractions } from "@/components/blog/social-interactions";
+import { CommentSection } from "@/components/blog/comment-section";
 import { motion } from "framer-motion";
 import { useState, useEffect, use } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { blogService } from "@/lib/blog-service";
+import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
+    const { user } = useAuth();
     const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -108,7 +110,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
                     {/* Content Section */}
                     <div className="relative">
                         {/* Sidebar Share (Desktop only) */}
-                        <aside className="hidden xl:block absolute -left-32 top-0 h-full">
+                        <aside className="hidden xl:block absolute -left-48 top-0 h-full">
                             <div className="sticky top-40 flex flex-col gap-6 items-center">
                                 <Link
                                     href="/"
@@ -118,8 +120,14 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
                                     <ArrowLeft className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" />
                                 </Link>
                                 <div className="h-24 w-px bg-black/5" />
-                                <div className="p-4 bg-white rounded-3xl border border-black/5 shadow-xl space-y-4">
-                                    <SocialShare title={post.title} />
+                                <div className="p-2 bg-white rounded-3xl border border-black/5 shadow-xl flex flex-col gap-4">
+                                    <SocialInteractions
+                                        postId={post.id}
+                                        userId={user?.uid}
+                                        initialLikes={post.likes}
+                                        initialDislikes={post.dislikes}
+                                        title={post.title}
+                                    />
                                 </div>
                             </div>
                         </aside>
@@ -130,6 +138,17 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
                                 <MarkdownRenderer content={post.content} />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Interactions after content for mobile/tablet */}
+                    <div className="mt-12 xl:hidden">
+                        <SocialInteractions
+                            postId={post.id}
+                            userId={user?.uid}
+                            initialLikes={post.likes}
+                            initialDislikes={post.dislikes}
+                            title={post.title}
+                        />
                     </div>
 
                     {/* Author Footer */}
@@ -152,9 +171,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
                     </footer>
 
                     {/* Comments Section */}
-                    <div className="mt-24">
-                        <Comments postId={post.id} />
-                    </div>
+                    <CommentSection postId={post.id} user={user} />
 
                 </motion.article>
             </main>

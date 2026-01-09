@@ -22,15 +22,21 @@ export interface BlogPost {
     readTime: number; // minutes
     views?: number;
     authorBio?: string;
+    likes?: string[]; // Array of User IDs
+    dislikes?: string[]; // Array of User IDs
+    reports?: string[]; // Array of User IDs
+    commentCount?: number;
 }
 
 export interface Comment {
     id: string;
     postId: string;
+    authorId: string; // Added authorId
     authorName: string;
     authorAvatar?: string;
     content: string;
     createdAt: string; // ISO string
+    likes?: string[]; // Array of User IDs
 }
 
 export interface Author {
