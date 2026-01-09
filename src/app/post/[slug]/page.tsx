@@ -12,7 +12,7 @@ import { useState, useEffect, use } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { blogService } from "@/lib/blog-service";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/components/providers/auth-provider";
 import Image from "next/image";
 import Link from "next/link";
 
