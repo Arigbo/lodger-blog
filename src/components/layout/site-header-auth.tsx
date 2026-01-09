@@ -39,7 +39,7 @@ export function SiteHeaderAuth() {
                 href="/writer/signup"
                 className="bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-primary transition-all shadow-xl hover:shadow-primary/20 active:scale-95 flex items-center gap-2 group"
             >
-                Join <Sparkles className="h-3 w-3 group-hover:animate-pulse" />
+                Join as Writer <Sparkles className="h-3 w-3 group-hover:animate-pulse" />
             </Link>
         </div>
     );

@@ -43,80 +43,90 @@ export default function Home() {
 
       <main className="pt-32 pb-24">
         {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-6 mb-24">
+        <section className="max-w-7xl mx-auto px-6 mb-32">
           {featured ? (
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "circOut" }}
-              className="relative"
+              className="relative group"
             >
-              <Link href={`/post/${featured.slug}`} className="group grid grid-cols-1 lg:grid-cols-12 gap-0 items-center overflow-hidden">
-                <div className="lg:col-span-8 relative aspect-[16/10] lg:aspect-auto lg:h-[70vh] rounded-[3rem] overflow-hidden shadow-2xl z-20">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-transparent z-10 opacity-60 group-hover:opacity-20 transition-opacity duration-700" />
-                  <img
-                    src={featured.coverImage}
-                    alt={featured.title}
-                    className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000 ease-out"
-                  />
-                  <div className="absolute bottom-10 left-10 z-20 hidden lg:block">
-                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-[2rem] text-white">
-                      <div className="flex items-center gap-4 mb-4">
-                        <img src={featured.author?.avatar || '/placeholder-avatar.jpg'} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-white/20" />
+              <Link href={`/post/${featured.slug}`} className="relative block overflow-hidden rounded-[4rem] bg-white shadow-2xl border border-black/5">
+                <div className="grid grid-cols-1 lg:grid-cols-2">
+                  <div className="relative aspect-[4/3] lg:aspect-square overflow-hidden">
+                    <img
+                      src={featured.coverImage}
+                      alt={featured.title}
+                      className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-1000 ease-out"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent z-10" />
+                  </div>
+
+                  <div className="p-12 lg:p-20 flex flex-col justify-center gap-10 relative">
+                    <div className="absolute top-0 right-0 p-40 bg-primary/5 blur-[100px] rounded-full -mr-20 -mt-20" />
+
+                    <div className="relative z-10 space-y-8">
+                      <div className="flex items-center gap-4">
+                        <span className="px-5 py-2 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20">
+                          Featured Story
+                        </span>
+                        <div className="h-px w-12 bg-black/10" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          {featured.category}
+                        </span>
+                      </div>
+
+                      <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-black leading-[0.9] text-foreground tracking-tight group-hover:text-primary transition-colors duration-500">
+                        {featured.title}
+                      </h1>
+
+                      <p className="text-xl md:text-2xl text-muted-foreground/80 font-medium leading-relaxed italic border-l-2 border-primary/20 pl-8">
+                        {featured.excerpt}
+                      </p>
+                    </div>
+
+                    <div className="relative z-10 flex items-center justify-between pt-10 border-t border-black/5">
+                      <div className="flex items-center gap-5">
+                        <img
+                          src={featured.author?.avatar || '/placeholder-avatar.jpg'}
+                          className="w-14 h-14 rounded-[1.25rem] object-cover ring-4 ring-white shadow-lg"
+                        />
                         <div>
-                          <p className="text-xs font-bold uppercase tracking-widest">{featured.author?.name}</p>
-                          <p className="text-[10px] text-white/60 font-medium">{featured.author?.role}</p>
+                          <p className="text-xs font-black uppercase tracking-widest text-foreground">{featured.author?.name}</p>
+                          <p className="text-[10px] text-primary font-bold uppercase tracking-widest mt-0.5">{featured.author?.role}</p>
                         </div>
                       </div>
-                      <p className="text-sm font-medium italic opacity-80 line-clamp-2">"{featured.excerpt}"</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-5 lg:-ml-24 bg-white p-12 lg:p-16 rounded-[3rem] shadow-2xl border border-border/40 relative z-30 mt-[-4rem] lg:mt-0 lg:min-h-[50vh] flex flex-col justify-center gap-8">
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-primary bg-primary/10 w-fit px-4 py-2 rounded-full">
-                      <TrendingUp className="h-3 w-3" /> FEATURED STORY
-                    </div>
-                    <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-black leading-[1] text-foreground tracking-tight group-hover:text-primary transition-colors duration-500">
-                      {featured.title}
-                    </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground/80 font-medium leading-relaxed">
-                      {featured.excerpt}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between pt-8 border-t border-border/60">
-                    <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      <span className="flex items-center gap-2"><Clock className="h-3 w-3" /> {featured.readTime} MIN</span>
-                      <span className="flex items-center gap-2"><Calendar className="h-3 w-3" /> {new Date(featured.publishedAt).toLocaleDateString()}</span>
-                    </div>
-                    <div className="p-4 rounded-full bg-black text-white group-hover:bg-primary transition-all group-hover:translate-x-2">
-                      <ArrowRight className="h-6 w-6" />
+                      <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        <Clock className="h-3 w-3" /> {featured.readTime} MIN
+                      </div>
                     </div>
                   </div>
                 </div>
               </Link>
             </motion.div>
           ) : (
-            <div className="text-center py-40 bg-white rounded-[3rem] border border-dashed border-border">
-              <p className="text-muted-foreground font-headline font-black uppercase tracking-widest">No Stories Published Yet</p>
+            <div className="text-center py-40 bg-white rounded-[4rem] border border-dashed border-border flex flex-col items-center gap-6">
+              <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
+                <Clock className="h-8 w-8 text-muted-foreground/30" />
+              </div>
+              <p className="text-muted-foreground font-headline font-black uppercase tracking-widest">Awaiting the first narrative...</p>
             </div>
           )}
         </section>
 
         {/* Recent Posts Grid */}
         <section className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between mb-16 px-4">
-            <div className="space-y-1">
-              <h2 className="font-headline text-4xl lg:text-5xl font-black uppercase tracking-tighter">Recent Posts</h2>
-              <div className="h-1 w-20 bg-primary rounded-full transition-all duration-700 hover:w-32" />
+          <div className="flex items-end justify-between mb-20 px-4">
+            <div className="space-y-4">
+              <div className="h-1.5 w-12 bg-primary rounded-full" />
+              <h2 className="font-serif text-5xl md:text-6xl font-black tracking-tighter">The Latest<span className="text-primary italic">.</span></h2>
             </div>
-            <Link href="/archive" className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group">
-              PREVIOUS POSTS <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+            <Link href="/archive" className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-black transition-colors flex items-center gap-3 bg-white px-8 py-4 rounded-2xl shadow-sm border border-black/5 group">
+              Explore Archive <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {recent.map((post, idx) => (
               <PostCard
                 key={post.id}

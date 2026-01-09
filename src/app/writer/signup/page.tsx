@@ -97,7 +97,7 @@ export default function WriterSignupPage() {
                         <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center group-hover:bg-primary transition-colors">
                             <Sparkles className="h-5 w-5 text-white" />
                         </div>
-                        <span>THE COMMONS<span className="text-primary text-5xl">.</span></span>
+                        <span>LODGER BLOG<span className="text-primary text-5xl">.</span></span>
                     </Link>
                     <div className="flex items-center justify-center gap-4">
                         <div className={cn("h-1.5 w-12 rounded-full transition-colors", step >= 1 ? "bg-black" : "bg-black/10")} />
