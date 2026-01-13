@@ -38,8 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setUser({
                         uid: authUser.uid,
                         email: authUser.email,
+                        displayName: data.name || data.displayName || authUser.displayName,
+                        photoURL: data.avatar || data.photoURL || authUser.photoURL,
                         ...data,
-                        isIncomplete: !data.role || !data.name
+                        isIncomplete: !data.role || !(data.name || data.displayName)
                     });
                 } else {
                     setUser({

@@ -45,7 +45,12 @@ export default function ProfilePage() {
                         id: doc.id,
                         ...doc.data()
                     })) as BlogPost[];
-                    setPosts(fetchedPosts.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()));
+                    const getTimestamp = (val: any) => {
+                        if (!val) return 0;
+                        if (typeof val?.toDate === 'function') return val.toDate().getTime();
+                        return new Date(val).getTime();
+                    };
+                    setPosts(fetchedPosts.sort((a, b) => getTimestamp(b.publishedAt) - getTimestamp(a.publishedAt)));
                 }
             } catch (error) {
                 console.error("Error fetching profile:", error);

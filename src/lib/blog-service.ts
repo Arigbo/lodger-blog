@@ -24,13 +24,18 @@ export const blogService = {
     /**
      * Fetch all published blog posts
      */
-    async getPublishedPosts(): Promise<BlogPost[]> {
+    async getPublishedPosts(limitCount?: number): Promise<BlogPost[]> {
         try {
-            const q = query(
+            let q = query(
                 collection(db, 'posts'),
                 where('published', '==', true),
                 orderBy('publishedAt', 'desc')
             );
+
+            if (limitCount) {
+                q = query(q, limit(limitCount));
+            }
+
             const snapshot = await getDocs(q);
             const posts = snapshot.docs.map(doc => this.mapDocToBlogPost(doc));
 

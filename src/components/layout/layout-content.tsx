@@ -11,7 +11,14 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
     const { openAuthModal, user } = useAuth();
     const searchParams = useSearchParams();
     const pathname = usePathname();
-    const isAppRoute = pathname?.startsWith('/writer') || pathname?.startsWith('/home') || pathname?.startsWith('/post');
+    const isAppRoute = pathname?.startsWith('/writer') ||
+        pathname?.startsWith('/home') ||
+        pathname?.startsWith('/post') ||
+        pathname?.startsWith('/explore') ||
+        pathname?.startsWith('/notifications') ||
+        pathname?.startsWith('/search') ||
+        pathname?.startsWith('/settings') ||
+        pathname?.startsWith('/u');
 
     useEffect(() => {
         const authAction = searchParams.get('auth');

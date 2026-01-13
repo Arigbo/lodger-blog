@@ -22,7 +22,8 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                             ...defaultSchema.attributes,
                             div: [['style'], ...(defaultSchema.attributes?.div || [])],
                             span: [['style'], ...(defaultSchema.attributes?.span || [])],
-                            p: [['style'], ...(defaultSchema.attributes?.p || [])]
+                            p: [['style'], ...(defaultSchema.attributes?.p || [])],
+                            img: [['src', 'alt', 'width', 'height', 'style'], ...(defaultSchema.attributes?.img || [])]
                         }
                     }]
                 ]}

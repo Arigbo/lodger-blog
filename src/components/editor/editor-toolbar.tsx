@@ -291,9 +291,10 @@ function ImageTool({ editor, uploadPathPrefix }: { editor: any, uploadPathPrefix
         setUploading(true);
         try {
             // Use specific path if provided, otherwise default to blog-images
+            const sanitizedName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
             const path = uploadPathPrefix
-                ? `${uploadPathPrefix}/${Date.now()}-${file.name}`
-                : `blog-images/${Date.now()}-${file.name}`;
+                ? `${uploadPathPrefix}/${Date.now()}-${sanitizedName}`
+                : `blog-images/${Date.now()}-${sanitizedName}`;
 
             const url = await uploadImage(file, path);
 

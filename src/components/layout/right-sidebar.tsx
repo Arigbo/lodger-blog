@@ -12,6 +12,7 @@ export function RightSidebar() {
     const { user } = useAuth();
     const router = useRouter();
     const [recommendedUsers, setRecommendedUsers] = useState<Author[]>([]);
+    const [trendingPosts, setTrendingPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -22,7 +23,22 @@ export function RightSidebar() {
     };
 
     useEffect(() => {
-        // ... (existing fetchUsers code)
+        const fetchSidebarData = async () => {
+            try {
+                const [users, posts] = await Promise.all([
+                    blogService.getRecommendedUsers(user?.uid),
+                    blogService.getPublishedPosts(4)
+                ]);
+                setRecommendedUsers(users);
+                setTrendingPosts(posts);
+            } catch (error) {
+                console.error("Error fetching sidebar data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSidebarData();
     }, [user?.uid]);
 
     return (
@@ -48,16 +64,22 @@ export function RightSidebar() {
             <div className="bg-muted/30 rounded-2xl overflow-hidden mt-4">
                 <h2 className="px-5 py-4 font-black text-xl">What's Happening</h2>
                 <div className="divide-y divide-border/10">
-                    {[1, 2, 3].map((_, i) => (
-                        <div key={i} className="px-5 py-3 hover:bg-black/5 transition-colors cursor-pointer">
-                            <div className="flex justify-between items-start">
-                                <span className="text-xs text-muted-foreground">Trending in Design</span>
-                                <MoreHorizontal className="h-4 w-4 text-muted-foreground hover:text-primary" />
-                            </div>
-                            <div className="font-bold mt-0.5">Minimalist Architecture</div>
-                            <div className="text-xs text-muted-foreground mt-0.5">12.5K posts</div>
-                        </div>
-                    ))}
+                    {loading ? (
+                        <div className="p-5 text-center text-muted-foreground text-sm">Loading...</div>
+                    ) : trendingPosts.length > 0 ? (
+                        trendingPosts.map((post) => (
+                            <Link key={post.id} href={`/p/${post.slug}`} className="block px-5 py-3 hover:bg-black/5 transition-colors cursor-pointer">
+                                <div className="flex justify-between items-start">
+                                    <span className="text-xs text-muted-foreground">Trending in {post.category || 'General'}</span>
+                                    <MoreHorizontal className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                                </div>
+                                <div className="font-bold mt-0.5 line-clamp-2">{post.title}</div>
+                                <div className="text-xs text-muted-foreground mt-0.5">{post.readTime || 1} min read</div>
+                            </Link>
+                        ))
+                    ) : (
+                        <div className="px-5 py-3 text-xs text-muted-foreground">No recent activity</div>
+                    )}
                     <Link href="/explore" className="block px-5 py-4 text-primary text-sm font-medium hover:bg-black/5 transition-colors">
                         Show more
                     </Link>
