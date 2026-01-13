@@ -78,7 +78,12 @@ export function PostCard({ post, index = 0, layout = 'standard', variant = 'card
                                     {/* <span className="text-muted-foreground truncate hidden sm:block">@{post.author?.name.toLowerCase().replace(/\s/g, '')}</span> */}
                                     <span className="text-muted-foreground shrink-0">·</span>
                                     <span className="text-muted-foreground shrink-0 hover:underline">
-                                        {post.publishedAt ? formatDistanceToNow(new Date(post.publishedAt), { addSuffix: false }).replace('about ', '') : 'Draft'}
+                                        {(() => {
+                                            if (!post.publishedAt) return 'Draft';
+                                            const date = new Date(post.publishedAt);
+                                            if (isNaN(date.getTime())) return 'Recently';
+                                            return formatDistanceToNow(date, { addSuffix: false }).replace('about ', '');
+                                        })()}
                                     </span>
                                 </div>
                                 <button className="p-1.5 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors -mr-2">
