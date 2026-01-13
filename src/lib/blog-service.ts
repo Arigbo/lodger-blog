@@ -65,10 +65,9 @@ export const blogService = {
                 const snap = await getDocs(q);
                 snap.forEach(doc => {
                     const data = doc.data();
-                    const authorId = data.uid || data.id || doc.id;
-                    authorsMap[authorId] = {
-                        uid: authorId,
-                        id: authorId,
+                    authorsMap[doc.id] = {
+                        uid: doc.id,
+                        id: doc.id,
                         name: data.name || data.displayName || 'Unknown Writer',
                         email: data.email || '',
                         avatar: data.photoURL || data.avatar || '',
