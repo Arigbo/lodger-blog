@@ -9,8 +9,28 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
-  title: "THE COMMONS | Lodger Blog",
+  title: {
+    default: "THE COMMONS | Lodger Blog",
+    template: "%s | The Commons",
+  },
   description: "Exploring the intersection of community, space, and modern home life.",
+  metadataBase: new URL('https://blog.lodger.app'),
+  keywords: ["student living", "community", "lodger", "blog", "guides"],
+  openGraph: {
+    title: "The Commons - Lodger Blog",
+    description: "Stories about student life, community, and modern living.",
+    url: "https://blog.lodger.app",
+    siteName: "The Commons",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Commons - Lodger Blog",
+    description: "Stories about student life, community, and modern living.",
+    images: ["/og-image.jpg"],
+  },
 };
 
 export default function RootLayout({

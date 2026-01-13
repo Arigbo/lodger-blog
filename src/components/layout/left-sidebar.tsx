@@ -6,6 +6,7 @@ import { Home, Search, PenSquare, User, Bell, BookOpen, Settings, LogOut, MoreHo
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/logo';
 
 export function LeftSidebar() {
     const pathname = usePathname();
@@ -25,11 +26,11 @@ export function LeftSidebar() {
             {/* Logo */}
             <div className="py-4 lg:py-6">
                 <Link href="/home" className="flex items-center gap-2 lg:px-4">
-                    <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center shrink-0">
-                        <BookOpen className="h-5 w-5 text-white" />
-                    </div>
+                    <Logo className="w-10 h-10 text-black" />
                 </Link>
             </div>
+// ...
+
 
             {/* Nav */}
             <nav className="flex-1 space-y-2 mt-2">

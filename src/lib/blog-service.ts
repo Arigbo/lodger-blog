@@ -18,7 +18,7 @@ import {
     serverTimestamp,
     Timestamp
 } from 'firebase/firestore';
-import { BlogPost, Comment } from '@/types';
+import { BlogPost, Comment, Author } from '@/types';
 
 export const blogService = {
     /**
@@ -177,9 +177,42 @@ export const blogService = {
     },
 
     /**
+    * Fetch recommended users to follow
+    */
+    async getRecommendedUsers(excludeUserId?: string, limitCount: number = 3): Promise<Author[]> {
+        try {
+            const q = query(
+                collection(db, 'users'),
+                where('role', 'in', ['writer', 'admin']), // Prefer showing writers
+                limit(limitCount + 1) // Fetch one extra to handle exclusion
+            );
+            const snapshot = await getDocs(q);
+            const users = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    uid: doc.id,
+                    name: data.name || data.displayName || 'Unknown User',
+                    email: data.email || '',
+                    role: data.role || 'writer',
+                    avatar: data.avatar || data.photoURL || '',
+                    bio: data.bio || ''
+                } as Author;
+            });
+
+            return users.filter(u => u.uid !== excludeUserId).slice(0, limitCount);
+        } catch (error) {
+            console.error('Error fetching recommended users:', error);
+            // Fallback for development if no users exist
+            return [];
+        }
+    },
+
+    /**
      * Helper to map Firestore document to BlogPost type
      */
     mapDocToBlogPost(doc: QueryDocumentSnapshot<DocumentData> | { id: string, data: () => DocumentData }): BlogPost {
+        // ... implementation
         const data = typeof doc.data === 'function' ? doc.data() : (doc as any).data;
         return {
             id: doc.id,
@@ -204,5 +237,22 @@ export const blogService = {
             reports: data.reports || [],
             commentCount: data.commentCount || 0
         } as BlogPost;
+    }, // Added comma here
+
+    async searchPosts(queryText: string): Promise<BlogPost[]> {
+
+        try {
+            const allPosts = await this.getPublishedPosts();
+            const lowerQuery = queryText.toLowerCase();
+            return allPosts.filter(post =>
+                post.title.toLowerCase().includes(lowerQuery) ||
+                post.excerpt.toLowerCase().includes(lowerQuery) ||
+                post.category.toLowerCase().includes(lowerQuery)
+            );
+        } catch (error) {
+            console.error('Error searching posts:', error);
+            return [];
+        }
     }
 };
+

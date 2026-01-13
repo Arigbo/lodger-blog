@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import { Clock, ArrowRight, MessageSquare, Heart, BarChart2, Share2, MoreHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface PostCardProps {
     post: BlogPost;
@@ -55,8 +57,10 @@ export function PostCard({ post, index = 0, layout = 'standard', variant = 'card
                             </div>
 
                             {/* Text */}
-                            <div className="mt-0.5 text-[15px] leading-normal text-foreground whitespace-pre-wrap break-words">
-                                {post.excerpt || post.title}
+                            <div className="mt-0.5 text-[15px] leading-normal text-foreground break-words [&_p]:mb-2 [&_img]:rounded-xl [&_img]:max-h-[300px] [&_img]:w-full [&_img]:object-cover [&_a]:text-primary [&_a]:underline">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {post.excerpt || post.title}
+                                </ReactMarkdown>
                             </div>
 
                             {/* Image (if exists) */}

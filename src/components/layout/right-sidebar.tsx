@@ -2,8 +2,29 @@
 
 import { Search, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { blogService } from '@/lib/blog-service';
+import { Author } from '@/types';
+import { useAuth } from '@/components/providers/auth-provider';
 
 export function RightSidebar() {
+    const { user } = useAuth();
+    const router = useRouter();
+    const [recommendedUsers, setRecommendedUsers] = useState<Author[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && searchQuery.trim()) {
+            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
+    useEffect(() => {
+        // ... (existing fetchUsers code)
+    }, [user?.uid]);
+
     return (
         <div className="pl-8 py-4 w-[350px] hidden lg:flex flex-col h-full">
             {/* Search */}
@@ -15,6 +36,9 @@ export function RightSidebar() {
                     <input
                         type="text"
                         placeholder="Search The Commons"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={handleSearch}
                         className="block w-full pl-12 pr-4 py-3 bg-muted/30 border-transparent text-black placeholder-muted-foreground focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary rounded-full sm:text-sm transition-all shadow-sm"
                     />
                 </div>
@@ -44,18 +68,26 @@ export function RightSidebar() {
             <div className="bg-muted/30 rounded-2xl overflow-hidden mt-6">
                 <h2 className="px-5 py-4 font-black text-xl">Who to Follow</h2>
                 <div className="space-y-0">
-                    {[1, 2].map((_, i) => (
-                        <div key={i} className="px-5 py-3 hover:bg-black/5 transition-colors cursor-pointer flex items-center gap-3">
-                            <div className="h-10 w-10 bg-black/10 rounded-full" />
-                            <div className="flex-1 min-w-0">
-                                <div className="font-bold text-sm truncate">Design Daily</div>
-                                <div className="text-xs text-muted-foreground truncate">@designdaily</div>
-                            </div>
-                            <button className="bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full hover:bg-black/80">
-                                Follow
-                            </button>
-                        </div>
-                    ))}
+                    {loading ? (
+                        <div className="p-5 text-center text-muted-foreground text-sm">Loading...</div>
+                    ) : recommendedUsers.length > 0 ? (
+                        recommendedUsers.map((author) => (
+                            <Link key={author.uid} href={`/u/${author.uid}`} className="px-5 py-3 hover:bg-black/5 transition-colors cursor-pointer flex items-center gap-3 group">
+                                <div className="h-10 w-10 bg-muted rounded-full overflow-hidden shrink-0">
+                                    <img src={author.avatar || '/placeholder-avatar.jpg'} alt={author.name} className="h-full w-full object-cover" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-bold text-sm truncate group-hover:underline">{author.name}</div>
+                                    <div className="text-xs text-muted-foreground truncate">@{author.role || 'writer'}</div>
+                                </div>
+                                <button className="bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full hover:bg-black/80 transition-colors">
+                                    Follow
+                                </button>
+                            </Link>
+                        ))
+                    ) : (
+                        <div className="p-5 text-center text-muted-foreground text-sm">No suggestions yet</div>
+                    )}
                     <Link href="/connect_people" className="block px-5 py-4 text-primary text-sm font-medium hover:bg-black/5 transition-colors">
                         Show more
                     </Link>
@@ -63,9 +95,9 @@ export function RightSidebar() {
             </div>
 
             <div className="mt-6 px-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                <a href="#" className="hover:underline">Terms of Service</a>
-                <a href="#" className="hover:underline">Privacy Policy</a>
-                <a href="#" className="hover:underline">Cookie Policy</a>
+                <Link href="#" className="hover:underline">Terms of Service</Link>
+                <Link href="#" className="hover:underline">Privacy Policy</Link>
+                <Link href="#" className="hover:underline">Cookie Policy</Link>
                 <span>© 2026 The Commons</span>
             </div>
         </div>
