@@ -16,7 +16,8 @@ import {
     increment,
     addDoc,
     serverTimestamp,
-    Timestamp
+    Timestamp,
+    documentId
 } from 'firebase/firestore';
 import { BlogPost, Comment, Author } from '@/types';
 
@@ -60,13 +61,14 @@ export const blogService = {
             // Fetch users in chunks of 10 (Firestore limit for 'in' queries)
             for (let i = 0; i < authorIds.length; i += 10) {
                 const chunk = authorIds.slice(i, i + 10);
-                const q = query(collection(db, 'users'), where('uid', 'in', chunk));
+                const q = query(collection(db, 'users'), where(documentId(), 'in', chunk));
                 const snap = await getDocs(q);
                 snap.forEach(doc => {
                     const data = doc.data();
-                    authorsMap[doc.id] = {
-                        uid: doc.id,
-                        id: doc.id,
+                    const authorId = data.uid || data.id || doc.id;
+                    authorsMap[authorId] = {
+                        uid: authorId,
+                        id: authorId,
                         name: data.name || data.displayName || 'Unknown Writer',
                         email: data.email || '',
                         avatar: data.photoURL || data.avatar || '',
