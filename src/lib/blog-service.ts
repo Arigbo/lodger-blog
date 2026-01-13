@@ -16,8 +16,7 @@ import {
     increment,
     addDoc,
     serverTimestamp,
-    Timestamp,
-    documentId
+    Timestamp
 } from 'firebase/firestore';
 import { BlogPost, Comment, Author } from '@/types';
 
@@ -38,52 +37,10 @@ export const blogService = {
             }
 
             const snapshot = await getDocs(q);
-            const posts = snapshot.docs.map(doc => this.mapDocToBlogPost(doc));
-
-            // Hydrate authors
-            return await this.hydrateAuthors(posts);
+            return snapshot.docs.map(doc => this.mapDocToBlogPost(doc));
         } catch (error) {
             console.error('Error fetching published posts:', error);
             return [];
-        }
-    },
-
-    /**
-     * Hydrate author data from users collection
-     */
-    async hydrateAuthors(posts: BlogPost[]): Promise<BlogPost[]> {
-        const authorIds = [...new Set(posts.map(p => p.authorId))].filter(Boolean);
-        if (authorIds.length === 0) return posts;
-
-        try {
-            const authorsMap: Record<string, Author> = {};
-
-            // Fetch users in chunks of 10 (Firestore limit for 'in' queries)
-            for (let i = 0; i < authorIds.length; i += 10) {
-                const chunk = authorIds.slice(i, i + 10);
-                const q = query(collection(db, 'users'), where(documentId(), 'in', chunk));
-                const snap = await getDocs(q);
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    authorsMap[doc.id] = {
-                        uid: doc.id,
-                        id: doc.id,
-                        name: data.name || data.displayName || 'Unknown Writer',
-                        email: data.email || '',
-                        avatar: data.photoURL || data.avatar || '',
-                        role: data.role || 'Writer',
-                        bio: data.bio || ''
-                    };
-                });
-            }
-
-            return posts.map(post => ({
-                ...post,
-                author: authorsMap[post.authorId] || post.author
-            }));
-        } catch (error) {
-            console.error("Error hydrating authors:", error);
-            return posts;
         }
     },
 
@@ -99,11 +56,7 @@ export const blogService = {
             );
             const snapshot = await getDocs(q);
             if (snapshot.empty) return null;
-            const post = this.mapDocToBlogPost(snapshot.docs[0]);
-
-            // Hydrate single author
-            const hydrated = await this.hydrateAuthors([post]);
-            return hydrated[0];
+            return this.mapDocToBlogPost(snapshot.docs[0]);
         } catch (error) {
             console.error(`Error fetching post by slug ${slug}:`, error);
             return null;
