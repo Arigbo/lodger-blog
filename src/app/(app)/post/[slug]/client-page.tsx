@@ -11,6 +11,7 @@ import { blogService } from "@/lib/blog-service";
 import { useAuth } from "@/components/providers/auth-provider";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function ClientBlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
@@ -126,14 +127,40 @@ export default function ClientBlogPostPage({ params }: { params: Promise<{ slug:
                     </div>
 
                     <div className="flex items-center justify-between px-2">
-                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-full h-10 w-10">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-full h-10 w-10"
+                            onClick={() => document.getElementById('comment-form')?.scrollIntoView({ behavior: 'smooth' })}
+                        >
                             <MessageSquare className="h-5 w-5" />
                         </Button>
                         <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-green-500 hover:bg-green-500/10 rounded-full h-10 w-10">
                             <Share2 className="h-5 w-5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-pink-500 hover:bg-pink-500/10 rounded-full h-10 w-10">
-                            <Heart className="h-5 w-5" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className={cn(
+                                "rounded-full h-10 w-10 transition-colors",
+                                post.likes?.includes(user?.uid || '')
+                                    ? "text-pink-500 bg-pink-500/10 hover:bg-pink-500/20"
+                                    : "text-muted-foreground hover:text-pink-500 hover:bg-pink-500/10"
+                            )}
+                            onClick={async () => {
+                                if (!user) return;
+                                const hasLiked = post.likes?.includes(user.uid);
+                                try {
+                                    await blogService.toggleLike(post.id, user.uid, !!hasLiked);
+                                    // Refresh post data
+                                    const updated = await blogService.getPostBySlug(post.slug);
+                                    if (updated) setPost(updated);
+                                } catch (error) {
+                                    console.error("Error liking post:", error);
+                                }
+                            }}
+                        >
+                            <Heart className={cn("h-5 w-5", post.likes?.includes(user?.uid || '') && "fill-current")} />
                         </Button>
                     </div>
                 </div>

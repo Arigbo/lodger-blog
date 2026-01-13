@@ -7,6 +7,10 @@ import { formatDistanceToNow } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { useState } from 'react';
+import { blogService } from '@/lib/blog-service';
+import { useAuth } from '@/components/providers/auth-provider';
+
 interface PostCardProps {
     post: BlogPost;
     index?: number;
@@ -15,7 +19,33 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, index = 0, layout = 'standard', variant = 'card' }: PostCardProps) {
+    const { user, openAuthModal } = useAuth();
+    const [likes, setLikes] = useState<string[]>(post.likes || []);
+    const [hasLiked, setHasLiked] = useState(user ? post.likes?.includes(user.uid) : false);
     const isFull = layout === 'full';
+
+    const handleLike = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!user) {
+            openAuthModal('signup');
+            return;
+        }
+
+        const newHasLiked = !hasLiked;
+        setHasLiked(newHasLiked);
+        setLikes(prev => newHasLiked ? [...prev, user.uid] : prev.filter(id => id !== user.uid));
+
+        try {
+            await blogService.toggleLike(post.id, user.uid, !newHasLiked);
+        } catch (error) {
+            console.error("Error toggling like:", error);
+            // Rollback
+            setHasLiked(!newHasLiked);
+            setLikes(prev => !newHasLiked ? [...prev, user.uid] : prev.filter(id => id !== user.uid));
+        }
+    };
 
     if (variant === 'feed') {
         return (
@@ -87,10 +117,20 @@ export function PostCard({ post, index = 0, layout = 'standard', variant = 'card
                                 </div>
 
                                 <div className="flex items-center gap-1 group">
-                                    <div className="p-2 rounded-full group-hover:bg-pink-500/10 group-hover:text-pink-500 transition-colors">
-                                        <Heart className="h-4.5 w-4.5" />
-                                    </div>
-                                    <span className="text-xs group-hover:text-pink-500 transition-colors">{post.likes?.length || 0}</span>
+                                    <button
+                                        onClick={handleLike}
+                                        className={cn(
+                                            "p-2 rounded-full transition-colors",
+                                            hasLiked
+                                                ? "text-pink-500 bg-pink-500/10"
+                                                : "group-hover:bg-pink-500/10 group-hover:text-pink-500"
+                                        )}
+                                    >
+                                        <Heart className={cn("h-4.5 w-4.5", hasLiked && "fill-current")} />
+                                    </button>
+                                    <span className={cn("text-xs transition-colors", hasLiked && "text-pink-500")}>
+                                        {likes.length}
+                                    </span>
                                 </div>
 
                                 <div className="flex items-center gap-1 group">

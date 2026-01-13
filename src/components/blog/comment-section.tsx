@@ -82,7 +82,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
             </div>
 
             {/* Comment Form */}
-            <form onSubmit={handleSubmit} className="relative group">
+            <form id="comment-form" onSubmit={handleSubmit} className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 to-primary/0 rounded-[2.5rem] blur opacity-25 group-focus-within:opacity-100 transition duration-1000 group-focus-within:duration-200"></div>
                 <div className="relative bg-white rounded-[2.2rem] border border-black/5 p-4 shadow-sm">
                     <textarea
