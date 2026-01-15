@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth'; // Renamed import
 import { auth, db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -61,22 +61,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => unsubscribeAuth();
     }, []);
 
-    const openAuthModal = (step: 'login' | 'signup' = 'login') => {
-        setModalState({ isOpen: true, step });
-    };
+    const openAuthModal = useCallback((step: 'login' | 'signup' = 'login') => {
+        setModalState(prev => {
+            if (prev.isOpen && prev.step === step) return prev;
+            return { isOpen: true, step };
+        });
+    }, []);
 
-    const closeAuthModal = () => {
-        setModalState(prev => ({ ...prev, isOpen: false }));
-    };
+    const closeAuthModal = useCallback(() => {
+        setModalState(prev => {
+            if (!prev.isOpen) return prev;
+            return { ...prev, isOpen: false };
+        });
+    }, []);
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         try {
             await firebaseSignOut(auth);
             setUser(null);
         } catch (error) {
             console.error("Error signing out:", error);
         }
-    };
+    }, []);
 
     return (
         <AuthContext.Provider value={{ user, loading, openAuthModal, closeAuthModal, logout }}>

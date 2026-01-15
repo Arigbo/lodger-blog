@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function HomePage() {
-    const { user } = useAuth();
+    const { user, openAuthModal } = useAuth();
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -54,30 +54,47 @@ export default function HomePage() {
                 </Tabs>
             </div>
 
-            {/* Compose Teaser (Mobile/Desktop) */}
-            <div className="px-4 py-4 border-b border-border/40 hidden sm:block">
-                <div className="flex gap-4">
-                    <div className="h-10 w-10 rounded-full bg-muted overflow-hidden shrink-0">
-                        {user?.photoURL ? (
-                            <img src={user.photoURL} alt={user.displayName || 'User'} className="h-full w-full object-cover" />
-                        ) : (
-                            <div className="h-full w-full bg-black/5" />
-                        )}
-                    </div>
-                    <Link href="/writer/create" className="flex-1">
-                        <div className="w-full bg-transparent text-muted-foreground text-xl py-2 cursor-text">
-                            What is happening?!
+            {/* Compose Teaser (Mobile/Desktop) or Registration Prompt */}
+            {user ? (
+                <div className="px-4 py-4 border-b border-border/40 hidden sm:block">
+                    <div className="flex gap-4">
+                        <div className="h-10 w-10 rounded-full bg-muted overflow-hidden shrink-0">
+                            {user?.photoURL ? (
+                                <img src={user.photoURL} alt={user.displayName || 'User'} className="h-full w-full object-cover" />
+                            ) : (
+                                <div className="h-full w-full bg-black/5" />
+                            )}
                         </div>
-                    </Link>
+                        <Link href="/writer/create" className="flex-1">
+                            <div className="w-full bg-transparent text-muted-foreground text-xl py-2 cursor-text">
+                                What is happening?!
+                            </div>
+                        </Link>
+                    </div>
+                    <div className="flex justify-end mt-4 border-t border-border/40 pt-3">
+                        <Link href="/writer/create">
+                            <button className="bg-primary hover:bg-primary/90 text-white font-bold rounded-full px-5 py-1.5 text-sm transition-all shadow-sm">
+                                Post
+                            </button>
+                        </Link>
+                    </div>
                 </div>
-                <div className="flex justify-end mt-4 border-t border-border/40 pt-3">
-                    <Link href="/writer/create">
-                        <button className="bg-primary hover:bg-primary/90 text-white font-bold rounded-full px-5 py-1.5 text-sm transition-all shadow-sm">
-                            Post
+            ) : (
+                <div className="px-4 py-6 border-b border-border/40 bg-gradient-to-r from-primary/5 to-primary/10">
+                    <div className="flex flex-col gap-3 text-center">
+                        <h3 className="font-bold text-lg">Join The Commons</h3>
+                        <p className="text-sm text-muted-foreground">
+                            Register to share your stories, connect with the community, and become a writer.
+                        </p>
+                        <button
+                            onClick={() => openAuthModal('signup')}
+                            className="bg-primary hover:bg-primary/90 text-white font-bold rounded-full px-6 py-2 text-sm transition-all shadow-lg mx-auto"
+                        >
+                            Get Started
                         </button>
-                    </Link>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Feed */}
             <div className="pb-20">
